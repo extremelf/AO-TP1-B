@@ -1,12 +1,13 @@
 import scrapy
 import sys
 import json
-from scrapy.crawler import CrawlerProcess, CrawlerRunner
+from scrapy.crawler import CrawlerRunner
 from scrapy.http.headers import Headers
 from scrapy.http.request import Request
 from twisted.internet import reactor, defer
 
 from CryptoList import CryptoList
+from DTO.CryptoInfo import CryptoInfoDTO, RecordInfoDTO
 
 RENDER_HTML_URL = 'http://localhost:8050/render.html'
 
@@ -18,7 +19,8 @@ class CryptoListSpider(scrapy.Spider):
         'DOWNLOAD_DELAY': 10,
         'LOG_ENABLED': False,
         'COOKIES_ENABLED': False,
-        'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+        'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15\
+         (KHTML, like Gecko) Mobile/15E148',
         'CONCURRENT_ITEMS': 4
     }
 
@@ -43,7 +45,8 @@ class CryptoInfoSpider(scrapy.Spider):
         'DOWNLOAD_DELAY': 10,
         'LOG_ENABLED': False,
         'COOKIES_ENABLED': False,
-        'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+        'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15\
+         (KHTML, like Gecko) Mobile/15E148',
         'CONCURRENT_ITEMS': 4
     }
 
@@ -62,21 +65,31 @@ class CryptoInfoSpider(scrapy.Spider):
     def parse(self, response, **kwargs):
         coin_id = response.css("div.nameHeader > img").xpath('@src').get().split("/")[-1].split(".")[0]
         request = Request(
-            url=f'https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id={coin_id}&convertId=2781&timeStart=1647820800&timeEnd=1653091200',
+            url=f'https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id={coin_id}\
+            &convertId=2781&timeStart=1647820800&timeEnd=1653091200',
             callback=self.parse_coins,
             cb_kwargs=dict(main_url=response.url))
         yield request
 
     def parse_coins(self, response, main_url):
         json_data = json.loads(response.body)
-        print(json_data['data']['quotes'][1]['timeOpen'])
+        records = []
+        for record in json_data['data']['quotes']:
+            records.append(RecordInfoDTO(time_open=record['timeOpen'], time_close=record['timeClose'],
+                                         time_high=record['timeHigh'], time_low=record['timeLow'],
+                                         price_open=record['quote']['open'], price_high=record['quote']['high'],
+                                         price_low=record['quote']['low'], price_close=record['quote']['close'],
+                                         volume=record['quote']['volume'], marketCap=record['quote']['marketCap'],
+                                         timestamp=record['quote']['timestamp']))
 
+        crypto_info_list.append(CryptoInfoDTO(name=json_data['data']['name'], records=records))
 
 
 if __name__ == "__main__":
     if "twisted.internet.reactor" in sys.modules:
         del sys.modules["twisted.internet.reactor"]
     cryptos = CryptoList()
+    crypto_info_list = []
     process = CrawlerRunner()
 
 
@@ -89,3 +102,6 @@ if __name__ == "__main__":
 
     crawler()
     reactor.run()
+    # dados a inserir da database estão na variavel crypto_info_list que consiste numa lista de CryptoInfoDTO definida
+    # no ficheiro DTO/CryptoInfo.py
+
