@@ -1,6 +1,7 @@
 import scrapy
 import sys
 import json
+import redis
 from scrapy.crawler import CrawlerRunner
 from scrapy.http.headers import Headers
 from scrapy.http.request import Request
@@ -8,8 +9,11 @@ from twisted.internet import reactor, defer
 
 from CryptoList import CryptoList
 from DTO.CryptoInfo import CryptoInfoDTO, RecordInfoDTO
+from db.connection import connection_pool
 
 RENDER_HTML_URL = 'http://localhost:8050/render.html'
+
+r = connection_pool()
 
 
 class CryptoListSpider(scrapy.Spider):
@@ -102,6 +106,6 @@ if __name__ == "__main__":
 
     crawler()
     reactor.run()
+    r.lpush("name", crypto_info_list)
     # dados a inserir da database estão na variavel crypto_info_list que consiste numa lista de CryptoInfoDTO definida
     # no ficheiro DTO/CryptoInfo.py
-
