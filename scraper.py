@@ -1,11 +1,12 @@
 import scrapy
 import sys
 import json
-from scrapy.crawler import CrawlerRunner
+from scrapy.crawler import CrawlerRunner, CrawlerProcess
 from scrapy.http.headers import Headers
 from scrapy.http.request import Request
 from twisted.internet import reactor, defer
 
+import settings
 from CryptoList import CryptoList
 from DTO.CryptoInfo import CryptoInfoDTO, RecordInfoDTO
 
@@ -16,12 +17,12 @@ class CryptoListSpider(scrapy.Spider):
     name = 'CryptoListSpider'
     start_urls = ['https://coinmarketcap.com/all/views/all']
     custom_settings = {
-        'DOWNLOAD_DELAY': 10,
+        'DOWNLOAD_DELAY': 2,
         'LOG_ENABLED': False,
         'COOKIES_ENABLED': False,
         'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15\
          (KHTML, like Gecko) Mobile/15E148',
-        'CONCURRENT_ITEMS': 4
+        'CONCURRENT_ITEMS': 4,
     }
 
     def __init__(self, *args, **kwargs):
@@ -42,12 +43,13 @@ class CryptoListSpider(scrapy.Spider):
 class CryptoInfoSpider(scrapy.Spider):
     name = 'CryptoInfoSpider'
     custom_settings = {
-        'DOWNLOAD_DELAY': 10,
+        'DOWNLOAD_DELAY': 3,
         'LOG_ENABLED': False,
         'COOKIES_ENABLED': False,
         'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15\
          (KHTML, like Gecko) Mobile/15E148',
-        'CONCURRENT_ITEMS': 4
+        'CONCURRENT_ITEMS': 4,
+        'ITEM_PIPELINES': {"redisPipeline.RedisPipeline": 300}
     }
 
     def __init__(self, *args, **kwargs):
@@ -58,7 +60,7 @@ class CryptoInfoSpider(scrapy.Spider):
 
     def start_requests(self):
         for url in self.start_urls:
-            body = json.dumps({"url": url, 'wait': 0.5}, sort_keys=True)
+            body = json.dumps({"url": url, 'wait': 0.1}, sort_keys=True)
             headers = Headers({'Content-Type': 'application/json'})
             yield scrapy.Request(RENDER_HTML_URL, self.parse, method="POST", body=body, headers=headers)
 
@@ -73,23 +75,20 @@ class CryptoInfoSpider(scrapy.Spider):
 
     def parse_coins(self, response, main_url):
         json_data = json.loads(response.body)
-        records = []
         for record in json_data['data']['quotes']:
-            records.append(RecordInfoDTO(time_open=record['timeOpen'], time_close=record['timeClose'],
-                                         time_high=record['timeHigh'], time_low=record['timeLow'],
-                                         price_open=record['quote']['open'], price_high=record['quote']['high'],
-                                         price_low=record['quote']['low'], price_close=record['quote']['close'],
-                                         volume=record['quote']['volume'], marketCap=record['quote']['marketCap'],
-                                         timestamp=record['quote']['timestamp']))
-
-        crypto_info_list.append(CryptoInfoDTO(name=json_data['data']['name'], records=records))
+            yield RecordInfoDTO(name=json_data['data']['name'], time_open=record['timeOpen'],
+                                time_close=record['timeClose'], time_high=record['timeHigh'],
+                                time_low=record['timeLow'],
+                                price_open=record['quote']['open'], price_high=record['quote']['high'],
+                                price_low=record['quote']['low'], price_close=record['quote']['close'],
+                                volume=record['quote']['volume'], marketCap=record['quote']['marketCap'],
+                                timestamp=record['quote']['timestamp'])
 
 
 if __name__ == "__main__":
     if "twisted.internet.reactor" in sys.modules:
         del sys.modules["twisted.internet.reactor"]
     cryptos = CryptoList()
-    crypto_info_list = []
     process = CrawlerRunner()
 
 
@@ -104,4 +103,3 @@ if __name__ == "__main__":
     reactor.run()
     # dados a inserir da database estão na variavel crypto_info_list que consiste numa lista de CryptoInfoDTO definida
     # no ficheiro DTO/CryptoInfo.py
-
