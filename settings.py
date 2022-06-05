@@ -8,9 +8,12 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810
 }
 
+CASSANDRA_KEYSPACE = 'coin_keyspace'
 ITEM_PIPELINES = {
-    RedisPipeline: 300
+    'project.pipelines.CassandraPipeline': 100
 }
+REDIS_ITEMS_KEY: str
+REDIS_ITEMS_SERIALIZER: str
 
 SPIDER_MIDDLEWARES = {
     'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,

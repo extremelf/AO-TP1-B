@@ -12,6 +12,7 @@ import settings
 from CryptoList import CryptoList
 from DTO.CryptoInfo import CryptoInfoDTO, RecordInfoDTO
 from db.connection import connection_pool
+import pipeline
 
 RENDER_HTML_URL = 'http://localhost:8050/render.html'
 
