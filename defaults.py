@@ -1,4 +1,5 @@
 import redis
+PIPELINE_KEY = '%(spider)s:items'
 
 REDIS_CLS = redis.StrictRedis
 REDIS_ENCODING = 'utf-8'

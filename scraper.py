@@ -55,7 +55,7 @@ class CryptoInfoSpider(scrapy.Spider):
         'USER_AGENT': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15\
          (KHTML, like Gecko) Mobile/15E148',
         'CONCURRENT_ITEMS': 4,
-        'ITEM_PIPELINES': {"redisPipeline.RedisPipeline": 300}
+        'ITEM_PIPELINES': {"pipeline.RedisPipeline": 400}
     }
 
     def __init__(self, *args, **kwargs):

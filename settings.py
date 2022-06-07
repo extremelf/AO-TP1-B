@@ -7,13 +7,15 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy_splash.SplashMiddleware': 725,
     'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810
 }
-
+REDIS_URL = 'redis://redis6.0:lepass420@localhost:6379'
 CASSANDRA_KEYSPACE = 'coin_keyspace'
 ITEM_PIPELINES = {
     'project.pipelines.CassandraPipeline': 100
 }
 REDIS_ITEMS_KEY: str
 REDIS_ITEMS_SERIALIZER: str
+
+
 
 SPIDER_MIDDLEWARES = {
     'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,

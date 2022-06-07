@@ -8,10 +8,12 @@ import defaults
 
 # Shortcut maps 'setting name' -> 'parmater name'.
 SETTINGS_PARAMS_MAP = {
-    'REDIS_URL': 'url',
+    'REDIS_USERNAME': 'redis 6.0',
+    'REDIS_PASSWORD': 'lepass420',
+    'REDIS_DB': 0,
+    'REDIS_URL': 'redis://redis6.0:lepass420@localhost:6379',
     'REDIS_HOST': 'localhost',
     'REDIS_PORT': 6379,
-    'REDIS_DB': 'db',
     'REDIS_ENCODING': 'encoding',
 }
 
@@ -20,7 +22,6 @@ if sys.version_info > (3,):
 
 
 def get_redis_from_settings(settings):
-
     params = defaults.REDIS_PARAMS.copy()
     params.update(settings.getdict('REDIS_PARAMS'))
     # XXX: Deprecate REDIS_* settings.
@@ -41,7 +42,6 @@ from_settings = get_redis_from_settings
 
 
 def get_redis(**kwargs):
-
     redis_cls = kwargs.pop('redis_cls', defaults.REDIS_CLS)
     url = kwargs.pop('url', None)
     if url:
