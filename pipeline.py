@@ -1,3 +1,4 @@
+import uuid as uuid
 from cassandra.cluster import Cluster
 from scrapy.utils.misc import load_object
 from scrapy.utils.serialize import ScrapyJSONEncoder
@@ -28,8 +29,9 @@ class CassandraPipeline(object):
         # insert item
         try:
             self.session.execute(
-                "INSERT INTO crypto_coin (name, marketCap,price_close,price_high,price_low,price_open,time_close,time_high, time_low, time_open,timestamp,volume) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "INSERT INTO crypto_coin (id, name, marketCap,price_close,price_high,price_low,price_open,time_close,time_high, time_low, time_open,timestamp,volume) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (
+                    uuid.uuid4(),
                     item['name'], item['marketCap'], item['price_close'], item['price_high'],
                     item['price_low'], item['price_open'],
                     item['time_close'], item['time_high'], item['time_low'], item['time_open'],
