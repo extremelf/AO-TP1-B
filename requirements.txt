@@ -33,7 +33,7 @@ qt5reactor==0.6.3
 queuelib==1.6.2
 requests==2.27.1
 requests-file==1.5.1
-Scrapy==2.6.1
+Scrapy==2.6.2
 scrapy-splash==0.8.0
 scrapyjs==0.2
 service-identity==21.1.0
